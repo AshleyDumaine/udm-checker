@@ -10,12 +10,12 @@ from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver.firefox.options import Options as FirefoxOptions
 from selenium.webdriver.chrome.service import Service
-
+import telegram_send
 URL='https://store.ui.com/collections/unifi-network-unifi-os-consoles/products/unifi-dream-machine'
 
 parser = argparse.ArgumentParser(description='email if UDM is in stock')
 parser.add_argument('--email', type=str)
-
+parser.add_argument('--telegram', action="store_true")
 args = parser.parse_args()
 
 options = FirefoxOptions()
@@ -34,16 +34,25 @@ status = soup.find(class_='comProduct__badge').getText()
 now = datetime.now()
 print(f'{now.strftime("%d/%m/%Y %H:%M:%S")} - {status}')
 
-if status == "In Stock":
-    msg = EmailMessage()
-    msg['Subject'] = f'The Ubiquity Dream Machine is in stock!'
-    msg['To'] = args.email
-    msg.set_content(f'Handy link: {URL}')
+subjectLine = "The Ubiquity Dream Machine is in stock!"
 
-    s = smtplib.SMTP('smtp.gmail.com', 587)
-    s.ehlo()
-    s.starttls()
-    # on you garbage google account, use https://www.google.com/settings/security/lesssecureapps
-    s.login(os.environ['LOGIN'], os.environ['PASSWORD'])
-    s.send_message(msg)
-    s.quit()
+if status == "In Stock":
+    if args.email:
+        msg = EmailMessage()
+        msg['Subject'] = subjectLine
+        msg['To'] = args.email
+        msg.set_content(f'Handy link: {URL}')
+
+        s = smtplib.SMTP('smtp.gmail.com', 587)
+        s.ehlo()
+        s.starttls()
+        # on you garbage google account, use https://www.google.com/settings/security/lesssecureapps
+        s.login(os.environ['LOGIN'], os.environ['PASSWORD'])
+        s.send_message(msg)
+        s.quit()
+    elif args.telegram:
+        try:
+            telegram_send.send(messages=[subjectLine,URL])
+        except telegram_send.ConfigError:
+            print("telegram-send not configured. Please run telegram-send --configure")
+
