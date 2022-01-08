@@ -9,7 +9,7 @@ from email.message import EmailMessage
 from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver.firefox.options import Options as FirefoxOptions
-from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.firefox.service import Service
 
 URL='https://store.ui.com/collections/unifi-network-unifi-os-consoles/products/unifi-dream-machine'
 
